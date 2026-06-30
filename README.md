@@ -13,14 +13,23 @@ A simulation of gravitational interactions between multiple bodies in space.
 - I used Python 3.10.11
 - Numpy and Copy imports required
 
-# Running the Sim:
+# Running the Sim
 
-- N/A right now. Merely created and tested numerical methods.
+- Copy the repository at any version
+- Run render.py via 'python render.py' in the terminal.
+- Note V0 and V1 don't work since they don't have a complete render.py.
 
 ## Version History
 
 ### V0 - Initial Commit
-**Files:** 'integrate.py','globals.py', 'object.py', 'render.py'
+
+**Files:** 
+'integrate.py',
+'globals.py', 
+'object.py', 
+'render.py'
+
+**Overview:**
 
 - Numerical methods, object class, and globals established
 - Basic mass definition along with three numerical methods: Euler, Improved Euler, and Velocity Verlet.
@@ -48,6 +57,68 @@ A simulation of gravitational interactions between multiple bodies in space.
 
 - Nothing new, but figured I should add a README.md. 
 - This is my first time using Version Control, so I'm just trying to get used to it.
+
+### V2 - Basic Rendering & UI Implementation
+
+**Files:** 
+
+'integrate.py',
+'globals.py', 
+'object.py', 
+'render.py', 
+'compute_acceleration.py', 
+'compute_energy.py', 
+'screen_manager.py', 
+'simulate.py', 
+'ui_manager.py'
+
+**Overview:**
+
+- Adds basic rendering to a simple orbital system (earth-sun rotation)
+- Splits up the acceleration and energy methods into seperate scripts for less complexity in the integrate.py script.
+- Globals doesn't change. This is probably because globals was made formal in this version, but I overroad the V0 globals with this one.
+- Added screen_manager.py script. Truncates massive orbital mechanics values into pixels for visual representation via several methods.
+- Added ui_manager.py script. Not to be confused with screen_manager, UI manager manages all of the UI (text, labels, ect)
+- Added simulate script that generalizes the process from numerical integrator -> on-screen pixels.
+
+**File Structure:**
+
+'integrate.py'
+    - Exclusively handles numerical integration of motion using various methods.
+
+'globals.py'
+    - Sets values that should hold globally. 
+    - Suspends the values into memory for dynamical changes during render.
+    - Split up into two seperate classes for now (changables and globals, changables is supposted to be the only class that changes during the simulation and can be modified)
+    - Sun and Earth are defined here for testing sake. 
+
+'object.py'
+    - Creates a basic body() class that everything else depends on. Class renamed from Body() to body().
+
+'compute_acceleration.py'
+    - Calculates acceleration using a brute-force calculation (O(n^2) time complexity)
+    - Moved in a seperate script from integrate.py for simplicity.
+
+'compute_energy.py'
+    - Calculates error ratio of methods using first law of thermodynamics
+    - Uses formula (energy_initial - energy_now)/energy_initial to calculate total energy loss over time.
+    - Not used currently.
+
+'screen_manager.py'
+    - Not to be confused with ui_manager.py
+    - Contains a class that converts massive orbital mechanics values into readable pixel-values.
+    - Claude AI helped me significantly here, but I tried my best to construct the code on my own.
+
+'ui_manager.py'
+    - The basis for the UI in the future.
+    - Creates a basic text button using pygame_gui
+
+'simulate.py'
+    - Contains a method that calls the numerical integrator of choice (defined in globals) and returns the integrated bodies.
+
+'render.py'
+    - Using pygame to construct the basic simulation.
+    - Splits up rendering into a couple different scripts (screen_manager.py, ui_manager.py, simulate.py, and this one that combines them all)
 
 ## Author
 Leevi Garrison - github.com/leevigarrison-lgtm

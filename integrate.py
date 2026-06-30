@@ -1,37 +1,16 @@
 import numpy as np
-from globals import G
-from globals import DT_DEFAULT
-from object import body
+from compute_acceleration import compute
 import copy
 
-class compute_acceleration:
-    # O(n^2) complexity
+import globals as g
 
-    # The mass i feels the acceleration from every other body.
-    def step(bodies):
-        for m_i in bodies:
-            a_i = np.zeros(2, dtype=float)
-            
-            for m_j in bodies:
+changables = g.changables
+globals = g.globals
 
-                # i != j in N-Body Sum
-                if m_i != m_j:
+# define commonly used variables globally for simpicity
+grav_constant = globals.G
+dt = globals.dt
 
-                    # Vector Distance
-                    r_ij = m_j.position - m_i.position
-
-                    # Magnitude and Unit Vector Calculations
-                    r_ij_magnitude = np.linalg.norm(r_ij)
-                    r_ij_magnitude_squared = r_ij_magnitude ** 2
-                    r_ij_unit = r_ij / r_ij_magnitude
-
-                    # Complete Scalar
-                    scalar = ((G * m_j.mass)/r_ij_magnitude_squared)
-
-                    # Calculation
-                    a_i += scalar * r_ij_unit
-
-            m_i.acceleration = a_i
 
 # This is the most inaccurate numerical integration class.
 # This assumes a constant rate of change because it's a first-order integrator.
@@ -40,15 +19,16 @@ class compute_acceleration:
 class euler:
     def step(bodies):
         # O(n^2):
-        compute_acceleration.step(bodies)
+        compute.step(bodies)
 
         for m in bodies:
 
             # Position function
-            m.position = m.position + (m.velocity * DT_DEFAULT)
+            m.position = m.position + (m.velocity * dt)
+            print(m.position)
 
             # Velocity function:
-            m.velocity = m.velocity + (m.acceleration * DT_DEFAULT)
+            m.velocity = m.velocity + (m.acceleration * dt)
 
 # Similar to Euler. Uses a second order average correction to reduce error significatly (factor of 4 since error grows x^2 on Euler)
 # Energy conservation is much better.
@@ -67,10 +47,10 @@ class improved_euler:
             m_predicted = bodies_copy[i]
 
             # Position function
-            m_actual.position = m_actual.position + ((m_actual.velocity + m_predicted.velocity) * 0.5 * DT_DEFAULT)
+            m_actual.position = m_actual.position + ((m_actual.velocity + m_predicted.velocity) * 0.5 * dt)
 
             # Velocity function:
-            m_actual.velocity = m_actual.velocity + ((m_actual.acceleration + m_predicted.acceleration) * 0.5 * DT_DEFAULT)
+            m_actual.velocity = m_actual.velocity + ((m_actual.acceleration + m_predicted.acceleration) * 0.5 * dt)
 
 # This is what's actually used in orbital mechanics
 # The energy conservation error oscillates instead of accumulating in a destructive way.
@@ -79,74 +59,19 @@ class improved_euler:
 
 class velocity_verlet:
     def step(bodies):
-        compute_acceleration.step(bodies)
+        compute.step(bodies)
 
         # Array for saving old accelerations
         acc = []
 
         # Compute new position:
         for m in bodies:
-            m.position = (m.position + m.velocity * DT_DEFAULT) + (0.5 * m.acceleration * DT_DEFAULT**2)
+            m.position = (m.position + m.velocity * dt) + (0.5 * m.acceleration * dt**2)
             acc.append(m.acceleration)
 
         # Compute new acceleration
-        compute_acceleration.step(bodies)
+        compute.step(bodies)
 
         # Uses old and new accelerations to update velocity.
         for i in range(len(bodies)):
-            bodies[i].velocity = bodies[i].velocity + (0.5 * (bodies[i].acceleration + acc[i]) * DT_DEFAULT)
-
-class energy:
-
-    # Computes E_0 (initial energy of the system for ratio calculation)
-    def __init__(self, bodies):
-        self.bodies = bodies
-        self.initial_energy = self.compute_total_energy(bodies)
-
-    # KE = 1/2 m v^2
-    # KE is the energy for motion
-    # Total KE is calculated by the sum of all the KEs.
-    def total_kinetic(self):
-        kinetic = 0
-
-        for m in self.bodies:
-            kinetic += 0.5 * m.mass * np.dot(m.velocity, m.velocity)
-
-        return kinetic
-
-    # This is the gravitational PE.
-    # Basically calculates the PE of all of the bodies across there relationships, not just one body.
-    def total_potential(self):
-        potential = 0
-
-        # Only need the relationship between objects, not everything like in compute_acceleration()
-        for i in range(len(self.bodies)):
-            for j in range(i + 1, len(self.bodies)):
-                m_i = self.bodies[i]
-                m_j = self.bodies[j]
-
-                # Remove the possibility of m_i being m_j (infinite distance problem)
-                
-                if m_i != m_j:
-                    r_ij = m_j.position - m_i.position
-                    r_ij_magnitude = np.linalg.norm(r_ij)
-                    
-                    potential += -(G * m_i.mass * m_j.mass) / r_ij_magnitude
-        
-        return potential
-    
-    def compute_total_energy(self):
-        kinetic = self.total_kinetic()
-        potential = self.total_potential()
-
-        # Total energy of a system determined by the sum of KE and PE.
-        return kinetic + potential
-    
-    # Ratio of energy conserved.
-    def compute_energy_conservation_ratio(self):
-        E_t = self.compute_energy_conservation()
-        E_0 = self.initial_energy
-        E_0_abs = abs(E_0)
-
-        return (E_t - E_0) / E_0_abs
-    
+            bodies[i].velocity = bodies[i].velocity + (0.5 * (bodies[i].acceleration + acc[i]) * dt)
