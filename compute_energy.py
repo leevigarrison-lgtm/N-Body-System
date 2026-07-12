@@ -2,10 +2,6 @@ import globals as g
 import numpy as np
 
 globals = g.globals
-changables = g.changables
-
-changables = g.changables
-globals = g.globals
 
 # define commonly used variables globally for simpicity
 grav_constant = globals.G

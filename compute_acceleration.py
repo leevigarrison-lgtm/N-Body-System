@@ -3,18 +3,16 @@ import globals as g
 from object import body
 import copy
 
-changables = g.changables
 globals = g.globals
-
-# define commonly used variables globally for simpicity
-grav_constant = globals.G
-dt = globals.dt
 
 class compute:
     # O(n^2) complexity
 
     # The mass i feels the acceleration from every other body.
     def step(bodies):
+
+        grav_constant = globals.G
+
         for m_i in bodies:
             a_i = np.zeros(2, dtype=float)
             

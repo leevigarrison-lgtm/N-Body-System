@@ -4,12 +4,9 @@ import copy
 
 import globals as g
 
-changables = g.changables
 globals = g.globals
 
 # define commonly used variables globally for simpicity
-grav_constant = globals.G
-dt = globals.dt
 
 
 # This is the most inaccurate numerical integration class.
@@ -18,6 +15,10 @@ dt = globals.dt
 
 class euler:
     def step(bodies):
+
+        # Need to define globals here since dt and grav_constant is dynamical
+        dt = globals.dt
+
         # O(n^2):
         compute.step(bodies)
 
@@ -25,7 +26,6 @@ class euler:
 
             # Position function
             m.position = m.position + (m.velocity * dt)
-            print(m.position)
 
             # Velocity function:
             m.velocity = m.velocity + (m.acceleration * dt)
@@ -34,6 +34,9 @@ class euler:
 # Energy conservation is much better.
 class improved_euler:
     def step(bodies):
+        # Need to define globals here since dt and grav_constant is dynamical
+        dt = globals.dt
+
         bodies_copy = copy.deepcopy(bodies) # For prediction value
 
         # Reuse Euler without rewriting code:
@@ -59,6 +62,9 @@ class improved_euler:
 
 class velocity_verlet:
     def step(bodies):
+
+        # Need to define globals here since dt and grav_constant is dynamical
+        dt = globals.dt
         compute.step(bodies)
 
         # Array for saving old accelerations
